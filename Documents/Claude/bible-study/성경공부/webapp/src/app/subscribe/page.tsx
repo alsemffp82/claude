@@ -26,7 +26,7 @@ export default function SubscribePage() {
     const { error: otpError } = await supabase.auth.signInWithOtp({
       email: form.email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/connect`,
+        emailRedirectTo: new URL('/auth/callback?next=/connect', process.env.NEXT_PUBLIC_APP_URL || window.location.origin).toString(),
         data: {
           name: form.name,
           send_day: form.send_day,

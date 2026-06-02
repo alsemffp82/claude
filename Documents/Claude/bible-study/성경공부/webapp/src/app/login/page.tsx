@@ -20,7 +20,8 @@ function LoginForm() {
     setLoading(true)
     const supabase = createClient()
 
-    const redirectTo = new URL('/auth/callback', window.location.origin)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+    const redirectTo = new URL('/auth/callback', appUrl)
     redirectTo.searchParams.set('next', next)
     if (inviteToken) redirectTo.searchParams.set('invite_token', inviteToken)
 
