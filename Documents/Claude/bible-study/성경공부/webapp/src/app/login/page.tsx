@@ -14,10 +14,12 @@ function LoginForm() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setErrorMsg('')
     const supabase = createClient()
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
@@ -25,10 +27,21 @@ function LoginForm() {
     redirectTo.searchParams.set('next', next)
     if (inviteToken) redirectTo.searchParams.set('invite_token', inviteToken)
 
-    await supabase.auth.signInWithOtp({
+    const { error: otpError } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: redirectTo.toString() },
     })
+
+    if (otpError) {
+      setErrorMsg(
+        otpError.status === 429
+          ? '이메일 발송 한도를 초과했어요. 잠시 후 다시 시도해주세요.'
+          : otpError.message
+      )
+      setLoading(false)
+      return
+    }
+
     setSent(true)
     setLoading(false)
   }
@@ -55,6 +68,11 @@ function LoginForm() {
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-sm text-red-700">
           링크가 만료됐거나 유효하지 않아요. 다시 시도해주세요.
+        </div>
+      )}
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-sm text-red-700">
+          {errorMsg}
         </div>
       )}
 
