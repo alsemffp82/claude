@@ -37,7 +37,11 @@ export default function SubscribePage() {
     })
 
     if (otpError) {
-      setError(otpError.message)
+      setError(
+        otpError.status === 429
+          ? '이메일 발송 한도를 초과했어요. 잠시 후 다시 시도해주세요.'
+          : otpError.message
+      )
       setLoading(false)
       return
     }
