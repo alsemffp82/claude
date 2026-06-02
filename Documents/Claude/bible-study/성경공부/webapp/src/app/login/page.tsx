@@ -66,6 +66,7 @@ function LoginForm() {
           placeholder="example@email.com"
           value={email}
           onChange={e => setEmail(e.target.value)}
+          suppressHydrationWarning
         />
       </div>
 

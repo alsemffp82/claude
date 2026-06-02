@@ -96,6 +96,7 @@ export default function SubscribePage() {
             type="text" required className="form-input"
             placeholder="내 이름을 입력해요"
             value={form.name} onChange={e => set('name', e.target.value)}
+            suppressHydrationWarning
           />
         </div>
 
@@ -105,6 +106,7 @@ export default function SubscribePage() {
             type="email" required className="form-input"
             placeholder="example@email.com"
             value={form.email} onChange={e => set('email', e.target.value)}
+            suppressHydrationWarning
           />
         </div>
 
@@ -127,6 +129,7 @@ export default function SubscribePage() {
                   checked={form.track === opt.value}
                   onChange={() => set('track', opt.value)}
                   className="mt-0.5 accent-[#C9972B]"
+                  suppressHydrationWarning
                 />
                 <div>
                   <div className="text-sm font-medium text-[#2C1F0F]">{opt.label}</div>
@@ -155,6 +158,7 @@ export default function SubscribePage() {
                   checked={form.start_offset === opt.value}
                   onChange={() => set('start_offset', opt.value)}
                   className="mt-0.5 accent-[#C9972B]"
+                  suppressHydrationWarning
                 />
                 <div>
                   <div className="text-sm font-medium text-[#2C1F0F]">{opt.label}</div>
