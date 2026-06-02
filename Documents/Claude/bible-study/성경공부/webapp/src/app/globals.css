@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-cream: #FAF7F2;
+  --color-brown: #5C4033;
+  --color-brown-light: #8B6B5A;
+  --color-gold: #C9972B;
+  --color-gold-light: #F0D9A0;
+  --color-gold-lightest: #FBF3DC;
+  --color-sage: #7A9E87;
+  --color-sage-light: #B8D4C0;
+  --color-sage-lightest: #EBF4EE;
+  --color-border: #E8DDD0;
+  --color-muted: #7A6555;
+}
+
+:root {
+  --background: #FAF7F2;
+  --foreground: #2C1F0F;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.card {
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid #E8DDD0;
+  box-shadow: 0 2px 16px rgba(92,64,51,0.08);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #E8DDD0;
+  border-radius: 0.625rem;
+  font-size: 0.9375rem;
+  color: #2C1F0F;
+  background: white;
+  transition: border-color 0.2s;
+  outline: none;
+  font-family: inherit;
+}
+.form-input:focus { border-color: #C9972B; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.35s ease forwards; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
