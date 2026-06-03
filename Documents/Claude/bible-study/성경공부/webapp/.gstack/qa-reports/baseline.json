@@ -1,0 +1,33 @@
+{
+  "date": "2026-06-03",
+  "url": "http://localhost:3005",
+  "healthScore": 96,
+  "issues": [
+    {
+      "id": "ISSUE-001",
+      "title": "btn-primary and btn-secondary CSS classes undefined",
+      "severity": "high",
+      "category": "functional",
+      "status": "fixed",
+      "commit": "41c3d96"
+    },
+    {
+      "id": "ISSUE-002",
+      "title": "Hydration warning on form inputs from password manager extensions",
+      "severity": "medium",
+      "category": "console",
+      "status": "fixed",
+      "commit": "3b85e69"
+    }
+  ],
+  "categoryScores": {
+    "console": 100,
+    "links": 100,
+    "visual": 100,
+    "functional": 100,
+    "ux": 100,
+    "performance": 100,
+    "content": 100,
+    "accessibility": 100
+  }
+}

@@ -1,14 +1,15 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SubscribePage() {
+  const router = useRouter()
   const [form, setForm] = useState({
-    name: '', email: '', send_day: 'monday', start_offset: '0', track: 'lover',
+    name: '', email: '', password: '', send_day: 'monday', start_offset: '0', track: 'lover',
   })
   const [loading, setLoading] = useState(false)
-  const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
@@ -19,14 +20,13 @@ export default function SubscribePage() {
     setError('')
 
     const supabase = createClient()
-
     const startDate = new Date()
     startDate.setDate(startDate.getDate() + parseInt(form.start_offset))
 
-    const { error: otpError } = await supabase.auth.signInWithOtp({
+    const { error: signUpError } = await supabase.auth.signUp({
       email: form.email,
+      password: form.password,
       options: {
-        emailRedirectTo: new URL('/auth/callback?next=/connect', process.env.NEXT_PUBLIC_APP_URL || window.location.origin).toString(),
         data: {
           name: form.name,
           send_day: form.send_day,
@@ -36,51 +36,37 @@ export default function SubscribePage() {
       },
     })
 
-    if (otpError) {
+    if (signUpError) {
       setError(
-        otpError.status === 429
-          ? '이메일 발송 한도를 초과했어요. 잠시 후 다시 시도해주세요.'
-          : otpError.message
+        signUpError.message.includes('already registered')
+          ? '이미 가입된 이메일이에요. 로그인해주세요.'
+          : signUpError.message
       )
       setLoading(false)
       return
     }
 
-    setSent(true)
-    setLoading(false)
-  }
+    // signUp 후 바로 로그인 (email confirmation 비활성화 시 자동 세션 생성)
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: form.email,
+      password: form.password,
+    })
 
-  if (sent) {
-    return (
-      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center p-4">
-        <div className="card p-8 w-full max-w-sm text-center fade-up">
-          <div className="text-5xl mb-4">📬</div>
-          <h2 className="text-xl font-bold text-[#2C1F0F] mb-2">이메일을 확인해주세요</h2>
-          <p className="text-sm text-[#7A6555] leading-relaxed">
-            <strong>{form.email}</strong>로<br />
-            로그인 링크를 보냈어요.<br />
-            링크를 클릭하면 바로 시작할 수 있어요.
-          </p>
-          <p className="text-xs text-[#7A6555] mt-4 p-3 bg-[#FBF3DC] rounded-lg">
-            📧 스팸함도 확인해보세요<br />
-            Supabase 발신 주소: no-reply@mail.app.supabase.io
-          </p>
-          <button
-            onClick={() => setSent(false)}
-            className="mt-4 text-xs text-[#7A6555] underline"
-          >
-            이메일 다시 보내기
-          </button>
-        </div>
-      </div>
-    )
+    if (signInError) {
+      setError('가입은 완료됐어요. 로그인 페이지에서 로그인해주세요.')
+      setLoading(false)
+      router.push('/login')
+      return
+    }
+
+    router.push('/connect')
   }
 
   return (
     <div className="min-h-screen">
       <div className="bg-gradient-to-br from-[#FFF9EF] to-[#EEF6F1] px-4 pt-8 pb-8 text-center">
         <div className="flex gap-4 justify-center items-center mb-4">
-          <Link href="/" className="text-sm text-[#7A6555] inline-block">← 돌아가기 </Link>
+          <Link href="/" className="text-sm text-[#7A6555] inline-block">← 돌아가기</Link>
           <div className="inline-flex items-center gap-2 bg-[#FBF3DC] border border-[#F0D9A0] rounded-full px-4 py-1.5 text-sm font-semibold text-[#C9972B]">
             ✨ 무료 · 16주 커플 성경공부
           </div>
@@ -96,45 +82,41 @@ export default function SubscribePage() {
 
         <div>
           <label className="block text-xs font-semibold text-[#7A6555] mb-1.5">이름</label>
-          <input
-            type="text" required className="form-input"
+          <input type="text" required className="form-input"
             placeholder="내 이름을 입력해요"
-            value={form.name} onChange={e => set('name', e.target.value)}
-            suppressHydrationWarning
-          />
+            value={form.name} onChange={e => set('name', e.target.value)} />
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-[#7A6555] mb-1.5">이메일</label>
-          <input
-            type="email" required className="form-input"
+          <input type="email" required className="form-input"
             placeholder="example@email.com"
-            value={form.email} onChange={e => set('email', e.target.value)}
-            suppressHydrationWarning
-          />
+            value={form.email} onChange={e => set('email', e.target.value)} />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-[#7A6555] mb-1.5">비밀번호</label>
+          <input type="password" required minLength={6} className="form-input"
+            placeholder="6자 이상 입력해주세요"
+            value={form.password} onChange={e => set('password', e.target.value)} />
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-[#7A6555] mb-1.5">트랙 선택</label>
           <div className="space-y-2">
             {[
-              { value: 'lover', label: '💑 연인으로 교제 중', desc: '16주 연인 커플 성경공부' },
-              { value: 'engaged', label: '💍 결혼 준비 중', desc: '16주 결혼준비 커플 성경공부' },
-              { value: 'married', label: '👫 결혼한 부부', desc: '16주 부부 성경공부' },
+              { value: 'lover',   label: '💑 연인으로 교제 중', desc: '16주 연인 커플 성경공부' },
+              { value: 'engaged', label: '💍 결혼 준비 중',     desc: '16주 결혼준비 커플 성경공부' },
+              { value: 'married', label: '👫 결혼한 부부',      desc: '16주 부부 성경공부' },
             ].map(opt => (
               <label key={opt.value}
                 className={`flex items-start gap-3 p-3 border-2 rounded-xl cursor-pointer transition-colors ${
-                  form.track === opt.value
-                    ? 'border-[#C9972B] bg-[#FBF3DC]'
-                    : 'border-[#E8DDD0] bg-white'
-                }`}
-              >
+                  form.track === opt.value ? 'border-[#C9972B] bg-[#FBF3DC]' : 'border-[#E8DDD0] bg-white'
+                }`}>
                 <input type="radio" name="track" value={opt.value}
                   checked={form.track === opt.value}
                   onChange={() => set('track', opt.value)}
-                  className="mt-0.5 accent-[#C9972B]"
-                  suppressHydrationWarning
-                />
+                  className="mt-0.5 accent-[#C9972B]" />
                 <div>
                   <div className="text-sm font-medium text-[#2C1F0F]">{opt.label}</div>
                   <div className="text-xs text-[#7A6555]">{opt.desc}</div>
@@ -148,22 +130,17 @@ export default function SubscribePage() {
           <label className="block text-xs font-semibold text-[#7A6555] mb-1.5">시작 시기</label>
           <div className="space-y-2">
             {[
-              { value: '0', label: '바로 시작할게요', desc: '이번 주부터 첫 이메일이 발송돼요' },
+              { value: '0', label: '바로 시작할게요',     desc: '이번 주부터 시작돼요' },
               { value: '7', label: '다음 주부터 시작할게요', desc: '일주일 후부터 시작돼요' },
             ].map(opt => (
               <label key={opt.value}
                 className={`flex items-start gap-3 p-3 border-2 rounded-xl cursor-pointer transition-colors ${
-                  form.start_offset === opt.value
-                    ? 'border-[#C9972B] bg-[#FBF3DC]'
-                    : 'border-[#E8DDD0] bg-white'
-                }`}
-              >
+                  form.start_offset === opt.value ? 'border-[#C9972B] bg-[#FBF3DC]' : 'border-[#E8DDD0] bg-white'
+                }`}>
                 <input type="radio" name="start" value={opt.value}
                   checked={form.start_offset === opt.value}
                   onChange={() => set('start_offset', opt.value)}
-                  className="mt-0.5 accent-[#C9972B]"
-                  suppressHydrationWarning
-                />
+                  className="mt-0.5 accent-[#C9972B]" />
                 <div>
                   <div className="text-sm font-medium text-[#2C1F0F]">{opt.label}</div>
                   <div className="text-xs text-[#7A6555]">{opt.desc}</div>
@@ -184,10 +161,11 @@ export default function SubscribePage() {
           </select>
         </div>
 
-        <button type="submit" disabled={loading || !form.name || !form.email}
-          className="btn-primary w-full text-base py-3.5"
-          style={{ background: '#C9972B', color: 'white', borderRadius: '0.75rem', padding: '0.875rem', fontWeight: 600, border: 'none', cursor: 'pointer', width: '100%' }}>
-          {loading ? '전송 중...' : '💑 신청하기'}
+        <button type="submit"
+          disabled={loading || !form.name || !form.email || form.password.length < 6}
+          className="w-full py-3.5 rounded-xl font-semibold text-white text-base"
+          style={{ background: '#C9972B' }}>
+          {loading ? '처리 중...' : '💑 신청하기'}
         </button>
 
         <p className="text-center text-xs text-[#7A6555]">
